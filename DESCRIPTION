@@ -10,7 +10,7 @@ Description: Graphical model estimation using zero-inflated negative
   steps: 1. estimate the moral graph using the neighborhood selection 
   based on the jointly penalized ZINB regression; 2. estimate the skeleton 
   of the graphical model using a modified PC-algorithm.
-License: MIT
+License: GPL
 Imports: MASS (>= 7.3.51.5),
          doParallel (>= 1.0.15),
          penalized (>= 0.9.51), 
