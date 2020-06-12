@@ -1,0 +1,26 @@
+Package: scZINB
+Type: Package
+Title: Graphical model estimation for zero-inflated count data
+Version: 1.0
+Date: 2020-06-01
+Author: Yang Liu, Jenny Yang
+Maintainer: Yang Liu <yliu433@gmail.com>
+Description: Graphical model estimation using zero-inflated negative
+  binomial model for single cell RNA-seq data. The method contains two 
+  steps: 1. estimate the moral graph using the neighborhood selection 
+  based on the jointly penalized ZINB regression; 2. estimate the skeleton 
+  of the graphical model using a modified PC-algorithm.
+License: MIT
+Imports: MASS (>= 7.3.51.5),
+         doParallel (>= 1.0.15),
+         penalized (>= 0.9.51), 
+         pscl (>= 1.5.5),
+         graph (>= 1.66.0),
+         mvtnorm (>= 1.1.0)
+LinkingTo: Rcpp, RcppEigen
+RoxygenNote: 7.1.0
+Roxygen: list(old_usage = TRUE)
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
