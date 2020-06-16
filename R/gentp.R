@@ -4,7 +4,7 @@
 #' Use a dynamic tuning parameter algorithm to generate lambads and taus 
 #' in penalized likelihood estimation of the ZINB model. 
 #' 
-#' @inheritParams nsZINB
+#' @inheritParams penZINB
 #' @param offsetx,offsetz Two vector of observations that are included in the 
 #' linear predictors of negative binomial regression and logistic regression 
 #' respectively. Default are \code{NULL}. 
@@ -37,13 +37,13 @@ gentp <- function(nlambda = 10, ntau = 3, y, X, unpenalizedx = NULL,
                       dist="negbin", link = "logit"), silent = TRUE)
   
   if(inherits(fit, 'try-error')){
-    capture.output(fit <- nsZINB(y, 1, unpenalizedx = unpenalizedx, 
-                                 unpenalizedz = unpenalizedz,
-                                 lambdas=0, taus=.1, maxIT=100, 
-                                 maxOptimIT = 0, eps = 2e-3, theta = NULL, 
-                                 warmStart = 'cond', pfactor = 1e-7, 
-                                 oneTheta = TRUE, convType = 1, 
-                                 start = 'jumpstart', order = FALSE), 
+    capture.output(fit <- penZINB(y, 1, unpenalizedx = unpenalizedx, 
+                                  unpenalizedz = unpenalizedz,
+                                  lambdas=0, taus=.1, maxIT=100, 
+                                  maxOptimIT = 0, eps = 2e-3, theta = NULL, 
+                                  warmStart = 'cond', pfactor = 1e-7, 
+                                  oneTheta = TRUE, convType = 1, 
+                                  start = 'jumpstart', order = FALSE), 
                    file = sinkNul)
     
     pi. <- binomial()$linkinv(fit[[1]]$gammas)

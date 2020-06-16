@@ -19,7 +19,7 @@ cond_ZINB <- function(x, y, z, alpha){
     zwo = zw = as.matrix(log(z+1/6))
   }
   
-  prec = nsZINB(y, (cbind(zw, log(x+1/6))), unpenalizedx = NULL, 
+  prec = penZINB(y, (cbind(zw, log(x+1/6))), unpenalizedx = NULL, 
                 unpenalizedz = NULL, 
                 maxOptimIT = 0, 
                 eps = 1e-5, theta = NULL, 
@@ -28,7 +28,7 @@ cond_ZINB <- function(x, y, z, alpha){
                 oneTheta = FALSE, convType = 1, 
                 start = 'jumpstart')
   
-  precwo = nsZINB(y, (zwo), unpenalizedx = NULL, 
+  precwo = penZINB(y, (zwo), unpenalizedx = NULL, 
                   unpenalizedz = NULL, 
                   maxOptimIT = 0, 
                   eps = 1e-5, theta = NULL, warmStart = FALSE, 
@@ -43,7 +43,7 @@ cond_ZINB <- function(x, y, z, alpha){
   pval = 1-pchisq(stat, df = 2)
   
   if(pval > alpha) {
-    prec = nsZINB(x, (cbind(zw, log(y+1/6))), unpenalizedx = NULL, 
+    prec = penZINB(x, (cbind(zw, log(y+1/6))), unpenalizedx = NULL, 
                   unpenalizedz = NULL, maxOptimIT = 0, 
                   eps = 1e-5, theta = NULL, 
                   warmStart = FALSE, lambdas = 0, 
@@ -51,7 +51,7 @@ cond_ZINB <- function(x, y, z, alpha){
                   oneTheta = FALSE, convType = 1, 
                   start = 'jumpstart')
     
-    precwo = nsZINB(x, (zwo), unpenalizedx = NULL, 
+    precwo = penZINB(x, (zwo), unpenalizedx = NULL, 
                     unpenalizedz = NULL,  
                     maxOptimIT = 0, 
                     eps = 1e-5, theta = NULL, 

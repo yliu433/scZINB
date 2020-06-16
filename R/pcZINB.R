@@ -100,7 +100,7 @@ pcZINB <- function(estG, variables, alpha = 0.01, fun = cond_ZINB){
     if(nrow(connect) > 0){
       res = foreach(iterd = 1:nrow(connect), 
                     .export=c("connectedComp", "cond_ZINB", 
-                              "nsZINB")) %dopar% { 
+                              "penZINB")) %dopar% { 
                                 tryCatch({
                                   if(iterd %in% floor(quantile(c(1:nrow(connect)), 
                                                                c(0.25, 0.5, 0.75)))){

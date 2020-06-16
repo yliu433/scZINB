@@ -62,7 +62,7 @@ hdist <- function(mat){
 
 #-----------------------------------
 # Functions for numerical optimization. 
-#   - Input details can be found under nsZINB
+#   - Input details can be found under penZINB
 #-----------------------------------
 
 ### Function to update likelihood

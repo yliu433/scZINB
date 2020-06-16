@@ -51,7 +51,11 @@ library(scZINB)
 In this section, we will use a simulated example to show how to perform the algorithm to estimate the skeleton of a graphical model. We can simple generate a true graphical model and the continuous sample data using the __genER__ function:
 ```{r}
 set.seed(1)
-ts <- genER(100, 0.01, 200, 0.5)
+n <- 200 # sample size
+p <- 100 # dimension
+p0 <- 0.01 # the probability of having an edge for any pair of vertices
+effs <- 0.5 # effect sizes of the association in the graphical model
+ts <- genER(p, p0, n, effs)
 graph <- ts$A
 graph <- (graph != 0) * 1
 mgraph <- mirror(graph)
@@ -73,38 +77,13 @@ Then we will use the sample data "data" to estimate the skeleton and compare the
 # step 0 marginal screening 
 gEstM <- marscr(log(data + 1/6), thres = 10)
 ```
-Now we can use the function __nsZINB__ to perform the neighborhood selection for the zero-inflated regression model using each varaible as the response and the remaining $(p−1)$ as covaraites.
+Now we can use the function __nsZINB__ to perform the neighborhood selection for the sample data using each varaible as the response and the remaining $(p−1)$ as covaraites. Here we use the above "gEstM" as an initial filter prior to the variable selection. The output is the estimated moral graph based on the extended BIC. See __help(nsZINB)__ for more details of this function. 
 ```{r, warning = FALSE}
 # step 1 neighborhood selection
-res1 <- lapply(1:ncol(data), function(i){
-  y <- data[,i]
-  X <- data[, which(gEstM[, i] != 0), drop = FALSE]
-  tmp <- nsZINB(y, log(X + 1/6), maxIT = 100, maxOptimIT = 0, eps = 1e-5, 
-                warmStart = "cond", start = 'jumpstart')
-  
-  # make sure the null model is included
-  K <- length(tmp)
-  beta_idx <- lapply(tmp, "[[", "betas.w")
-  gamma_idx <- lapply(tmp, "[[", "gammas.w")
-  flag <- sapply(1:K, function(i){
-    all(unique(c(beta_idx[[i]], gamma_idx[[i]])) == 1)
-  })
-  if(all(!flag)){
-    tmp2 <- nsZINB(y, 1, lambdas = 0, taus = 1e-6, maxIT = 100, 
-                   maxOptimIT = 0, eps = 1e-5, 
-                   warmStart = "cond", start = 'jumpstart')
-    
-    tmp[[paste(K + 1)]] <- tmp2$`1`
-    tmp[[paste(K + 1)]]$lambda <- 10000
-    tmp[[paste(K + 1)]]$tau <- 1e-6
-  }
-  tmp
-})
+mgh1 <- nsZINB(data, filter = gEstM)
 ```
-The __createGraph__ function can be used to combine the above results and then generate the moral graph. We can further compare the estimated moral graph with the true graph structure:
+The __compareGraphs__ function can be used to compare the estimated moral graph with the true graph structure:
 ```{r}
-gh1 <- createGraph(res1, gEstM)
-mgh1 <- mirror(gh1)
 compareGraphs(mgh1, mgraph)
 ```
 In step 2, the function __pcZINB__ removes the false connections in the moral graph via a modified PC algorithm:

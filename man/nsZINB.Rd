@@ -4,20 +4,21 @@
 \alias{nsZINB}
 \title{Neighborhood selection for zero-inflated negative binomial regression}
 \usage{
-nsZINB(y, X, unpenalizedx = NULL, unpenalizedz = NULL, lambdas = NULL,
-  taus = NULL, nlambda = 10, ntau = 3, naPercent = 0.4, maxIT = 1000,
-  maxIT2 = 25, track = NULL, theta.st = NULL, stepThrough = NULL,
-  optimType = "EM", loud = NULL, warmStart = TRUE, bicgamma = NULL,
-  irlsConv = FALSE, weightedPen = TRUE, numericalDeriv = FALSE,
-  pfactor = 0.01, oneTheta = FALSE, maxOptimIT = 50,
-  errorDirec = tempdir(), eps = 0.001, convType = 1, start = NULL,
-  order = FALSE, alwaysUpdateWeights = FALSE, penType = 1)
+nsZINB(dat, filter = NULL, bic = "extBIC", unpenalizedx = NULL,
+  unpenalizedz = NULL, lambdas = NULL, taus = NULL, nlambda = 10,
+  ntau = 3, naPercent = 0.4, warmStart = "cond", bicgamma = NULL,
+  errorDirec = tempdir(), eps = 1e-05, start = "jumpstart")
 }
 \arguments{
-\item{y}{zero-inflated count response}
+\item{dat}{the zero-inflated count sample data with n observations and p 
+variables}
 
-\item{X}{covariate matrix. Intercept is added within the function. This 
-could take '1' as the input which indicates an intercept-only model.}
+\item{filter}{a binary matrix indicating the initial filter prior to the 
+variable selection in ZINB regression. Default is \code{NULL}, which uses
+all the covariates.}
+
+\item{bic}{the criterion used to create the graph, could be "BIC", "extBIC"
+or "extBICGG". Default is "extBIC".}
 
 \item{unpenalizedx, unpenalizedz}{Additional unpenalized covariates for 
 negative binomial and logistic regression respectively. Default is 
@@ -34,118 +35,35 @@ and 3.}
 \item{naPercent}{allowable percentage of observations with missing values - 
 default is .4.}
 
-\item{maxIT}{maximum number of EM iterations - default is 1000.}
+\item{warmStart}{default is 'cond', which resets the the starting point to 
+the original starting point when non-convergence happens. Other options are 
+TRUE, which keeps previous estimates as starting points for estimation for 
+the next tuning parameter; FALSE uses the same starting point for all tp.}
 
-\item{maxIT2}{maximum number of iterations for updating the coefficients
-in the regression model - default is 25.}
-
-\item{track}{default is \code{NULL} (deactivated). Otherwise, it takes a 
-single integer value which activates tracking mode for that tuning
-parameter pair. See output change details below.}
-
-\item{theta.st}{default is \code{NULL} (deactivated) where theta estimation 
-is done using MLE. Otherwise, takes a single value for theta to hold 
-constant for all estimation.}
-
-\item{stepThrough}{default is \code{NULL} (deactivated). Otherwise needs to 
-be a length 2 vector to activate debugging mode. The first number is
-the theta iteration and second is the EM iteration to prompt
-stepthrough debugger.}
-
-\item{optimType}{options are "EM" and "optim". Default is "EM" which 
-runs the EM algorithm prior to using BFGS optimization. "optim" skips the 
-EM algorithm.}
-
-\item{loud}{default is \code{NULL} (deactivated). Otherwise takes a 
-positive integer x to announce at every xth iteration of EM and 
-numerical optimization algorithm.}
-
-\item{warmStart}{default is TRUE, which keeps previous estimates as starting
-points for estimation for the next tuning parameter. Other options are
-'cond', which resets the the starting point to the original starting point
-when non-convergence happens. FALSE uses the same starting point for all tp.}
-
-\item{irlsConv}{forces each estimate of beta and gamma to converge first if 
-set to TRUE. Default is FALSE.}
-
-\item{weightedPen}{default is TRUE. Weights the penalty using the Hessian.}
-
-\item{numericalDeriv}{default is FALSE. Calculates the Hessian numerically 
-when set to TRUE. Otherwise, calculates it analytically.}
-
-\item{pfactor}{default is 1e-2. The multiplier for the largest calculated 
-penalty to determine smallest penalty value. Use in conjunction with
-nlambda/ntau to control the granularity of the tp grid.}
-
-\item{oneTheta}{default is FALSE (deactivated). If set to TRUE, only 
-estimates theta once per tuning parameter pair.}
-
-\item{maxOptimIT}{maximum number of iterations for numerical optimization 
-(BFGS) after the EM algorithm. By default is set to 50. Convergence time
-is long.}
+\item{bicgamma}{the parameter used in the extended BIC. Default is \code{NULL}, 
+which uses the log(the dimension)/log(the sample size).}
 
 \item{errorDirec}{whenever the EM algorithm errors out, the function auto 
 saves to this directory and moves on to the next tuning parameters. Default
 is the R temporary directory.}
 
-\item{eps}{threshold for convergence for the EM algorithm.}
+\item{eps}{threshold for convergence for the EM algorithm - default is 1e-5.}
 
-\item{convType}{manages the order of convergence within the EM algorithm. 
-Options are 1 (default) and 2. Type 1 forces convergence of the binomial
-and negative binomial parts together. Type 2 forces convergence of binomial
-part first, then negative binomial part.}
-
-\item{start}{default is \code{NULL} which sets starting coefficients values 
-to 0. If set to 'jumpstart', then will estimate the starting coefficients
+\item{start}{default is 'jumpstart', which estimates the starting coefficients
 from penalized negative binomial estimation and logistic regression based on
-the penalized library. Otherwise, can also take direct input for starting
+the penalized library. If set to \code{NULL}, then set starting coefficients 
+values to 0. Otherwise, can also take direct input for starting
 values. Must be in the form of list(betas = v1, gammas = v2), where v1 and
 v2 are vectors the length of the number of covariates in X.}
-
-\item{order}{default is FALSE. If TRUE, then order of estimation is ordered 
-by marginal correlation with response.}
-
-\item{alwaysUpdateWeights}{default is FALSE. Updates the penalty weights 
-after each convergence of the EM algorithm.}
-
-\item{penType}{options are 1 (default) or 2. 1 is the group log penalty. 2 
-is lasso.}
 }
 \value{
-A list with each element corresponding to each tuning 
-parameter pair. Each element contains the following components:
-\describe{
-  \item{X}{The design matrix used for calculations. Non-empty only for the 
-  first tuning parameter pair.}
-  \item{betas}{Non-zero beta coefficients corresponding to betas.w.}
-  \item{gammas}{Non-zero gamma coefficients corresponding to gammas.w.}
-  \item{loglik.obs}{Observed data log likelihood at convergence.}
-  \item{pen}{Value of the penalty at convergence.}
-  \item{theta.r}{Theta path.}
-  \item{theta}{Theta estimate at convergence.}
-  \item{BIC}{BIC value at convergence.}
-  \item{extBIC}{Extended BIC value at convergence.}
-  \item{extBICGG}{Extended BIC GG value at convergence.}
-  \item{lambda, tau}{Tuning parameter pair used.}
-}
+returns the estimated moral graph.
 }
 \description{
-Perform variable selection for ZINB regression via penalized maximum 
-likelihood.
-}
-\details{
-If tracking, this function returns a nested list of all 
-estimated with the following hierarchichy:
-\itemize{
-  \item Level 1 - TP (may not be included if only 1 tp pair is tracked);
-   last two elements are lambda and tau,
-  \item Level 2 - Theta Estimate (up to 20); last two elements are theta,
-  \item Level 3 - EM Iteration (up tp max it), 
-}  
-with the following values: loglik, loglik.em, loglikZI, loglikNB, pen, 
-betas, gammas.
+Estimate the moral graph using the penalized ZINB regression based on the 
+zero-inflated count sample data
 }
 \seealso{
-\code{\link{gentp}} for generating tuning parameters of lambdas
-and taus.
+\code{\link{penZINB}} for the penalized zero-inflated negative 
+binomial model.
 }

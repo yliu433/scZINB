@@ -4,14 +4,14 @@
 \alias{createGraph}
 \title{Create a graph based on the output from the nsZINB function}
 \usage{
-createGraph(models, gEstM, bic = "extBIC")
+createGraph(models, filter, bic = "extBIC")
 }
 \arguments{
 \item{models}{a list of p models. The jth model is the output from the nsZINB 
 function using the jth variable as the response and rest (p-1) 
 variables as the covariates.}
 
-\item{gEstM}{the graph model after performing the marginal screening}
+\item{filter}{the filter matrix prior to performing the variable selection.}
 
 \item{bic}{the criterion used to create the graph, could be "BIC", "extBIC"
 or "extBICGG". Default is "extBIC".}
