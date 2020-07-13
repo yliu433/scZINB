@@ -222,13 +222,13 @@ void score_info(double theta, Eigen::VectorXd mu, Eigen::VectorXd y,
         yi  = y(i);
         mui = mu(i);
         
-        scorei  = weights(i)*(R::digamma(yi + theta) - R::digamma(theta) + log(theta) + 1 - log(theta + mui) - (yi + 
-            theta)/(mui + theta));
+        scorei  = weights(i)*(R::digamma(yi + theta) - R::digamma(theta) + 
+            log(theta) + 1 - log(theta + mui) - (yi + theta)/(mui + theta));
         score1 += scorei;
         
-        infoi   = weights(i)*(-1*R::trigamma(theta + 
-            yi) + R::trigamma(theta) - 1/theta + 2/(mui + theta) - (yi + theta)/std::pow((mui + 
-            theta),2));
+        infoi   = weights(i)*(-1*R::trigamma(theta + yi) + R::trigamma(theta) - 
+            1/theta + 2/(mui + theta) - 
+            (yi + theta)/std::pow((mui + theta),2));
         info1  += infoi;
     }
     
@@ -351,7 +351,7 @@ double updateCoefk_log(Eigen::VectorXd y, Eigen::VectorXd betas,
             if(upd > delta){
                 result = upd - delta;
             }
-            else if(upd < -1*delta){
+            else if(upd <= -1*delta){
                 result = upd + delta;
             }
             else {
