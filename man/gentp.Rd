@@ -5,21 +5,21 @@
 \title{Generate tuning parameters for variable selection in the zero-inflated 
 negative binomial regression}
 \usage{
-gentp(nlambda = 10, ntau = 3, y, X, unpenalizedx = NULL,
-  unpenalizedz = NULL, offsetx = NULL, offsetz = NULL, pfactor = 0.01,
-  penType = 1)
+gentp(y, X, nlambda = 30, ntau = 5, unpenalizedx = NULL,
+  unpenalizedz = NULL, offsetx = NULL, offsetz = NULL, betaweight = 1,
+  gammaweight = 1, pfactor = 0.01, penType = 1)
 }
 \arguments{
-\item{nlambda}{number of unique lambda and tau values - default are 10 
-and 3.}
-
-\item{ntau}{number of unique lambda and tau values - default are 10 
-and 3.}
-
 \item{y}{zero-inflated count response}
 
 \item{X}{covariate matrix. Intercept is added within the function. This 
 could take '1' as the input which indicates an intercept-only model.}
+
+\item{nlambda}{number of unique lambda and tau values - default are 30 
+and 5.}
+
+\item{ntau}{number of unique lambda and tau values - default are 30 
+and 5.}
 
 \item{unpenalizedx}{Additional unpenalized covariates for 
 negative binomial and logistic regression respectively. Default is 
@@ -32,6 +32,10 @@ negative binomial and logistic regression respectively. Default is
 \item{offsetx, offsetz}{Two vector of observations that are included in the 
 linear predictors of negative binomial regression and logistic regression 
 respectively. Default are \code{NULL}.}
+
+\item{betaweight, gammaweight}{Weights of the coefficients for the 
+penalization in negative binomial regression and logistic regression 
+respectively. Default are 1.}
 
 \item{pfactor}{default is 1e-2. The multiplier for the largest calculated 
 penalty to determine smallest penalty value. Use in conjunction with

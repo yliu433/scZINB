@@ -67,24 +67,6 @@ nsZINB <- function(dat, filter = NULL, bic = "extBIC",
                    naPercent = naPercent, warmStart = warmStart, 
                    bicgamma = bicgamma, start = start, 
                    errorDirec = errorDirec, eps = eps)
-    
-    # make sure the null model is included
-    K <- length(tmp)
-    beta_idx <- lapply(tmp, "[[", "betas.w")
-    gamma_idx <- lapply(tmp, "[[", "gammas.w")
-    flag <- sapply(1:K, function(i){
-      all(unique(c(beta_idx[[i]], gamma_idx[[i]])) == 1)
-    })
-    if(all(!flag)){
-      tmp2 <- penZINB(y, 1, lambdas = 0, taus = 1e-6, maxIT = 100, 
-                      unpenalizedx = unpenalizedx, unpenalizedz = unpenalizedz,
-                      maxOptimIT = 0, eps = eps, bicgamma = bicgamma,
-                      warmStart = warmStart, start = start)
-      
-      tmp[[paste(K + 1)]] <- tmp2$`1`
-      tmp[[paste(K + 1)]]$lambda <- 10000
-      tmp[[paste(K + 1)]]$tau <- 1e-6
-    }
     tmp
   })
   

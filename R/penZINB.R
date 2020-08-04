@@ -14,8 +14,8 @@
 #' model with. Default is \code{NULL} where the function will auto-generate
 #' a tuning parameter search grid. If default is used, must have input for
 #' nlambda and ntau.
-#' @param nlambda,ntau number of unique lambda and tau values - default are 10 
-#' and 3.
+#' @param nlambda,ntau number of unique lambda and tau values - default are 30 
+#' and 5.
 #' @param naPercent allowable percentage of observations with missing values - 
 #' default is .4.
 #' @param maxIT maximum number of EM iterations - default is 1000.
@@ -107,7 +107,7 @@
 #' and taus.
 #' @export
 penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL, 
-                    lambdas = NULL, taus = NULL, nlambda = 10, ntau = 3,
+                    lambdas = NULL, taus = NULL, nlambda = 30, ntau = 5,
                     naPercent =.4, maxIT = 1000, 
                     maxIT2 = 25, track = NULL, theta.st = NULL, 
                     stepThrough = NULL, optimType = "EM", 
@@ -390,7 +390,7 @@ penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL,
     gammaWeight = rep(1,M)
   }
   
-  # Importan: Change Weights -------------
+  # Scale Weights -------------
   betaWeight <- sqrt(abs(betaWeight))
   gammaWeight <- sqrt(abs(gammaWeight))
   
@@ -398,6 +398,16 @@ penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL,
   
   betaWeight <- betaWeight / tmp
   gammaWeight <- gammaWeight / tmp
+  
+  # remove the weight of the intercept in order to generate the grid
+  if(intOnly){
+    betaWeight2 <- betaWeight
+    gammaWeight2 <- gammaWeight
+  }else{
+    betaWeight2 <- betaWeight[-1]
+    gammaWeight2 <- gammaWeight[-1]
+  }
+  
   
   # Create tuning parameter grid if not given
   ##############################
@@ -407,12 +417,12 @@ penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL,
   }
   
   if(!is.null(taus)){
-    ntau = length(lambdas)
+    ntau = length(taus)
   }
   
   if(is.null(lambdas) | is.null(taus)){
-    tps = gentp(nlambda,ntau,y,X,unpenalizedx, unpenalizedz, offsetx,
-                offsetz)
+    tps = gentp(y, XR, nlambda, ntau, unpenalizedx, unpenalizedz, offsetx,
+                offsetz, betaWeight2, gammaWeight2)
     
     lambdas = tps[,1]
     taus = tps[,2]    

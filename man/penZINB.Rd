@@ -5,7 +5,7 @@
 \title{Penalized zero-inflated negative binomial regression}
 \usage{
 penZINB(y, X, unpenalizedx = NULL, unpenalizedz = NULL, lambdas = NULL,
-  taus = NULL, nlambda = 10, ntau = 3, naPercent = 0.4, maxIT = 1000,
+  taus = NULL, nlambda = 30, ntau = 5, naPercent = 0.4, maxIT = 1000,
   maxIT2 = 25, track = NULL, theta.st = NULL, stepThrough = NULL,
   optimType = "EM", loud = NULL, warmStart = TRUE, bicgamma = NULL,
   irlsConv = FALSE, weightedPen = TRUE, numericalDeriv = FALSE,
@@ -28,8 +28,8 @@ model with. Default is \code{NULL} where the function will auto-generate
 a tuning parameter search grid. If default is used, must have input for
 nlambda and ntau.}
 
-\item{nlambda, ntau}{number of unique lambda and tau values - default are 10 
-and 3.}
+\item{nlambda, ntau}{number of unique lambda and tau values - default are 30 
+and 5.}
 
 \item{naPercent}{allowable percentage of observations with missing values - 
 default is .4.}

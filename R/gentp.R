@@ -8,11 +8,15 @@
 #' @param offsetx,offsetz Two vector of observations that are included in the 
 #' linear predictors of negative binomial regression and logistic regression 
 #' respectively. Default are \code{NULL}. 
+#' @param betaweight,gammaweight Weights of the coefficients for the 
+#' penalization in negative binomial regression and logistic regression 
+#' respectively. Default are 1.
 #' @export
 #' @return A matrix with two columns. Each row represents a pair of tuning
 #' parameters: lambda and tau. 
-gentp <- function(nlambda = 10, ntau = 3, y, X, unpenalizedx = NULL, 
+gentp <- function(y, X, nlambda = 30, ntau = 5, unpenalizedx = NULL, 
                   unpenalizedz = NULL, offsetx = NULL, offsetz = NULL,
+                  betaweight = 1, gammaweight = 1,
                   pfactor = 1e-2, penType = 1) {
   if(.Platform$OS.type == "unix"){
     sinkNul = "/dev/null"
@@ -56,12 +60,12 @@ gentp <- function(nlambda = 10, ntau = 3, y, X, unpenalizedx = NULL,
   w <- pi.*(1-pi.)
   r = (y - pi.)/w
   
-  l1.g <- abs(crossprod(XR,w*r))
+  l1.g <- 2 * abs( crossprod(XR,w*r) / gammaweight )
   
   w <- (mu./(1 + mu./1))
   r = (y-mu.)/mu.
   
-  l1.b <- abs(crossprod(XR,w*r))
+  l1.b <- 2 * abs(crossprod(XR,w*r) / betaweight )
   l1.max = max(l1.g, l1.b)
   
   
@@ -69,10 +73,20 @@ gentp <- function(nlambda = 10, ntau = 3, y, X, unpenalizedx = NULL,
   # Thresholds <- c(seq(l1.max,pfactor*l1.max,len=nlambda))   
   
   if(penType == 1){
-    maxTau = l1.max/N
+    maxTau = min(l1.max/N, 0.1)
     tauset = c(exp(seq(log(1e-6),log(maxTau),len=ntau)))
-    taus = rep(tauset, each=nlambda)
     
+    lambda_max <- maxTau * l1.max
+    tmp <- penZINB(y, XR, lambdas = lambda_max, taus = max(tauset) )
+    while(length(tmp[[1]]$betas.w) > 1 | length(tmp[[1]]$gammas.w) > 1){
+      lambda_max <- lambda_max + 2
+      tmp <- penZINB(y, XR, lambdas = lambda_max, taus = max(tauset) )
+    }
+    
+    l1.max <- lambda_max / maxTau
+    Thresholds <- c(exp(seq(log(l1.max),log(pfactor*l1.max),len=nlambda)))
+    
+    taus = rep(tauset, each = nlambda)
     lambdas = taus*Thresholds  
   } else if(penType == 2){
     taus = rep(1, nlambda)
