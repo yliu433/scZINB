@@ -5,8 +5,8 @@
 \title{Neighborhood selection for zero-inflated negative binomial regression}
 \usage{
 nsZINB(dat, filter = NULL, bic = "extBIC", unpenalizedx = NULL,
-  unpenalizedz = NULL, lambdas = NULL, taus = NULL, nlambda = 10,
-  ntau = 3, naPercent = 0.4, warmStart = "cond", bicgamma = NULL,
+  unpenalizedz = NULL, lambdas = NULL, taus = NULL, nlambda = 30,
+  ntau = 5, naPercent = 0.4, warmStart = "cond", bicgamma = NULL,
   errorDirec = tempdir(), eps = 1e-05, start = "jumpstart")
 }
 \arguments{

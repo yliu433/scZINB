@@ -45,7 +45,7 @@
 #' @export
 nsZINB <- function(dat, filter = NULL, bic = "extBIC", 
                    unpenalizedx = NULL, unpenalizedz = NULL, 
-                   lambdas = NULL, taus = NULL, nlambda = 10, ntau = 3, 
+                   lambdas = NULL, taus = NULL, nlambda = 30, ntau = 5, 
                    naPercent = .4, warmStart = "cond", bicgamma = NULL,
                    errorDirec = tempdir(), eps = 1e-5, 
                    start = "jumpstart"){

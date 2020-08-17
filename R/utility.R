@@ -230,7 +230,7 @@ updateTheta <- function(betas, gammas, offsetx, offsetz, lambda, tau, theta.st, 
 
   theta.s = theta
   # if(is.null(theta.st)){
-    theta <- try(theta.ml(y, mu, weights = (1-zGy)), silent = TRUE)
+    theta <- try(theta_ml(theta.s, y, mu, weights = (1-zGy)), silent = TRUE)
     if(inherits(theta, "try-error")){
       theta = theta.s
     }
