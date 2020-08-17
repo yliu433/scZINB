@@ -18,8 +18,8 @@
 #' model with. Default is \code{NULL} where the function will auto-generate
 #' a tuning parameter search grid. If default is used, must have input for
 #' nlambda and ntau.
-#' @param nlambda,ntau number of unique lambda and tau values - default are 10 
-#' and 3.
+#' @param nlambda,ntau number of unique lambda and tau values - default are 30 
+#' and 5.
 #' @param naPercent allowable percentage of observations with missing values - 
 #' default is .4.
 #' @param warmStart default is 'cond', which resets the the starting point to 
