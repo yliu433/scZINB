@@ -7,7 +7,8 @@
 nsZINB(dat, filter = NULL, bic = "extBIC", unpenalizedx = NULL,
   unpenalizedz = NULL, lambdas = NULL, taus = NULL, nlambda = 30,
   ntau = 5, naPercent = 0.4, warmStart = "cond", bicgamma = NULL,
-  errorDirec = tempdir(), eps = 1e-05, start = "jumpstart")
+  maxOptimIT = 0, theta.st = NULL, oneTheta = FALSE, eps = 1e-05,
+  start = "jumpstart")
 }
 \arguments{
 \item{dat}{the zero-inflated count sample data with n observations and p 
@@ -35,7 +36,7 @@ and 5.}
 \item{naPercent}{allowable percentage of observations with missing values - 
 default is .4.}
 
-\item{warmStart}{default is 'cond', which resets the the starting point to 
+\item{warmStart}{default is 'cond', which resets the starting point to 
 the original starting point when non-convergence happens. Other options are 
 TRUE, which keeps previous estimates as starting points for estimation for 
 the next tuning parameter; FALSE uses the same starting point for all tp.}
@@ -43,9 +44,9 @@ the next tuning parameter; FALSE uses the same starting point for all tp.}
 \item{bicgamma}{the parameter used in the extended BIC. Default is \code{NULL}, 
 which uses the log(the dimension)/log(the sample size).}
 
-\item{errorDirec}{whenever the EM algorithm errors out, the function auto 
-saves to this directory and moves on to the next tuning parameters. Default
-is the R temporary directory.}
+\item{maxOptimIT}{maximum number of iterations for numerical optimization 
+(BFGS) after the EM algorithm. By default is set to 50. Convergence time
+is long.}
 
 \item{eps}{threshold for convergence for the EM algorithm - default is 1e-5.}
 

@@ -67,20 +67,25 @@ double linkFunc(double mu, const int link){
  */
 
 // Function to calculate Vdiag
-Eigen::VectorXd irlsV(const Eigen::VectorXd mu, const Eigen::VectorXd zGy, 
+Eigen::VectorXd irlsV(const Eigen::VectorXd mu, const Eigen::VectorXd mu2, 
+                      const Eigen::VectorXd zGy, 
                       const double theta, const int family){
     
     Eigen::VectorXd Vdiag(mu.size());
+    double tmp = 0;
+    double tmp2 = 0;
     
     switch(family){
     case 1 :
         for(int i = 0; i < mu.size(); i += 1){
-            Vdiag(i) = (1-zGy(i))*(mu(i)/(1 + mu(i)/theta));
+            tmp2 = mu(i)/theta;
+            tmp = mu2(i)*tmp2*mu(i)/((1+tmp2)*(1+tmp2));
+            Vdiag(i) = (1-zGy(i))*(mu(i)/(1 + mu(i)/theta) - tmp);
         }
         return(Vdiag);
     case 2 :
         for(int i = 0; i < mu.size(); i += 1){
-            Vdiag(i) = mu(i)*(1-mu(i));
+            Vdiag(i) = mu2(i)*(1-mu2(i));
             if(Vdiag(i) == 0){
                 Vdiag(i) = 1e-5;
             } else if(Vdiag(i) == 1){
@@ -94,7 +99,8 @@ Eigen::VectorXd irlsV(const Eigen::VectorXd mu, const Eigen::VectorXd zGy,
 };
 
 // Function to calculate Z for IRLS
-Eigen::VectorXd irlsZ(const Eigen::VectorXd eta, const Eigen::VectorXd y, 
+Eigen::VectorXd irlsZ(const Eigen::VectorXd eta, const Eigen::VectorXd zGy, 
+                      const Eigen::VectorXd y, const double theta,
                       const int family, Eigen::VectorXd Vdiag){
     
     Eigen::VectorXd Z(y.size());
@@ -110,7 +116,7 @@ Eigen::VectorXd irlsZ(const Eigen::VectorXd eta, const Eigen::VectorXd y,
                 }
             }
             
-            Z(i) = eta(i) + (y(i) - mui)/mui;
+            Z(i) = eta(i) + (1-zGy(i))*(y(i) - mui)/(Vdiag(i)*(1+mui/theta));
         }
         return(Z);
     case 2 :
@@ -120,6 +126,8 @@ Eigen::VectorXd irlsZ(const Eigen::VectorXd eta, const Eigen::VectorXd y,
             if(std::isnan(pij)){
                 if(eta(i) > 100){
                     pij = 1-1e-16;
+                }else if(eta(i) < -100){
+                    pij = 1e-16;
                 }
             }
             
@@ -282,19 +290,27 @@ double updateCoefk_log(Eigen::VectorXd y, Eigen::VectorXd betas,
     int count = 0;
     
     Eigen::VectorXd eta(X.rows());
+    Eigen::VectorXd eta2(X.rows());
     Eigen::VectorXd mu(X.rows());
+    Eigen::VectorXd mu2(X.rows());
     
     switch(family){
     case 1 :
         eta = calcEta(betas, X, offsetx);
+        eta2 = calcEta(gammas, X, offsetz);
+        mu = updateMu(eta, family);
+        mu2 = updateMu(eta2, 2);
         break;
     case 2 :
         eta = calcEta(gammas, X, offsetz);
+        eta2 = eta;
         y = zGy;
+        mu = updateMu(eta, family);
+        mu2 = mu;
         break;
     }
     
-    mu = updateMu(eta, family);
+    
     
     double sto = 0;
     while(diff > 1e-5 && count < 50){
@@ -313,8 +329,8 @@ double updateCoefk_log(Eigen::VectorXd y, Eigen::VectorXd betas,
             break;
         }
         
-        Eigen::VectorXd Vdiag = irlsV(mu, zGy, theta, family);
-        Eigen::VectorXd Z = irlsZ(eta, y, family, Vdiag);
+        Eigen::VectorXd Vdiag = irlsV(mu, mu2, zGy, theta, family);
+        Eigen::VectorXd Z = irlsZ(eta, zGy, y, theta, family, Vdiag);
         Eigen::VectorXd r(eta.size());
         
         r = Z - eta + X.col(k)*sto;
@@ -400,19 +416,25 @@ double updateCoefk_lasso(Eigen::VectorXd y, Eigen::VectorXd betas,
     int count = 0;
     
     Eigen::VectorXd eta(X.rows());
+    Eigen::VectorXd eta2(X.rows());
     Eigen::VectorXd mu(X.rows());
+    Eigen::VectorXd mu2(X.rows());
     
     switch(family){
     case 1 :
         eta = calcEta(betas, X, offsetx);
+        eta2 = calcEta(gammas, X, offsetz);
+        mu = updateMu(eta, family);
+        mu2 = updateMu(eta2, 2);
         break;
     case 2 :
         eta = calcEta(gammas, X, offsetz);
+        eta2 = eta;
         y = zGy;
+        mu = updateMu(eta, family);
+        mu2 = mu;
         break;
     }
-    
-    mu = updateMu(eta, family);
     
     double sto = 0;
     while(diff > 1e-5 && count < 50){
@@ -431,8 +453,8 @@ double updateCoefk_lasso(Eigen::VectorXd y, Eigen::VectorXd betas,
             break;
         }
         
-        Eigen::VectorXd Vdiag = irlsV(mu, zGy, theta, family);
-        Eigen::VectorXd Z = irlsZ(eta, y, family, Vdiag);
+        Eigen::VectorXd Vdiag = irlsV(mu, mu2, zGy, theta, family);
+        Eigen::VectorXd Z = irlsZ(eta, zGy, y, theta, family, Vdiag);
         Eigen::VectorXd r(eta.size());
         
         

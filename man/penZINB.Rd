@@ -7,11 +7,10 @@
 penZINB(y, X, unpenalizedx = NULL, unpenalizedz = NULL, lambdas = NULL,
   taus = NULL, nlambda = 30, ntau = 5, naPercent = 0.4, maxIT = 1000,
   maxIT2 = 25, track = NULL, theta.st = NULL, stepThrough = NULL,
-  optimType = "EM", loud = NULL, warmStart = TRUE, bicgamma = NULL,
+  optimType = "EM", loud = NULL, warmStart = FALSE, bicgamma = NULL,
   irlsConv = FALSE, weightedPen = TRUE, numericalDeriv = FALSE,
-  pfactor = 0.01, oneTheta = FALSE, maxOptimIT = 50,
-  errorDirec = tempdir(), eps = 1e-05, convType = 1, start = NULL,
-  order = FALSE, alwaysUpdateWeights = FALSE, penType = 1)
+  pfactor = 0.01, oneTheta = FALSE, maxOptimIT = 50, eps = 1e-05,
+  convType = 1, start = NULL, order = FALSE, penType = 1)
 }
 \arguments{
 \item{y}{zero-inflated count response}
@@ -60,10 +59,10 @@ EM algorithm.}
 positive integer x to announce at every xth iteration of EM and 
 numerical optimization algorithm.}
 
-\item{warmStart}{default is TRUE, which keeps previous estimates as starting
-points for estimation for the next tuning parameter. Other options are
-'cond', which resets the the starting point to the original starting point
-when non-convergence happens. FALSE uses the same starting point for all tp.}
+\item{warmStart}{default is FALSE, which uses the same starting point for all
+tp. Other options are 'cond', which resets the the starting point to the 
+original starting point when non-convergence happens. TRUE keeps previous 
+estimates as starting points for estimation for the next tuning parameter.}
 
 \item{bicgamma}{the parameter used in the extended BIC. Default is \code{NULL}, 
 which uses the log(the dimension)/log(the sample size).}
@@ -87,10 +86,6 @@ estimates theta once per tuning parameter pair.}
 (BFGS) after the EM algorithm. By default is set to 50. Convergence time
 is long.}
 
-\item{errorDirec}{whenever the EM algorithm errors out, the function auto 
-saves to this directory and moves on to the next tuning parameters. Default
-is the R temporary directory.}
-
 \item{eps}{threshold for convergence for the EM algorithm - default is 1e-5.}
 
 \item{convType}{manages the order of convergence within the EM algorithm. 
@@ -107,9 +102,6 @@ v2 are vectors the length of the number of covariates in X.}
 
 \item{order}{default is FALSE. If TRUE, then order of estimation is ordered 
 by marginal correlation with response.}
-
-\item{alwaysUpdateWeights}{default is FALSE. Updates the penalty weights 
-after each convergence of the EM algorithm.}
 
 \item{penType}{options are 1 (default) or 2. 1 is the group log penalty. 2 
 is lasso.}

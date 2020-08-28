@@ -37,10 +37,10 @@
 #' @param optimType options are "EM" and "optim". Default is "EM" which 
 #' runs the EM algorithm prior to using BFGS optimization. "optim" skips the 
 #' EM algorithm. 
-#' @param warmStart default is TRUE, which keeps previous estimates as starting
-#' points for estimation for the next tuning parameter. Other options are
-#' 'cond', which resets the the starting point to the original starting point
-#' when non-convergence happens. FALSE uses the same starting point for all tp.
+#' @param warmStart default is FALSE, which uses the same starting point for all
+#' tp. Other options are 'cond', which resets the the starting point to the 
+#' original starting point when non-convergence happens. TRUE keeps previous 
+#' estimates as starting points for estimation for the next tuning parameter.
 #' @param bicgamma the parameter used in the extended BIC. Default is \code{NULL}, 
 #' which uses the log(the dimension)/log(the sample size). 
 #' @param irlsConv forces each estimate of beta and gamma to converge first if 
@@ -56,9 +56,6 @@
 #' @param maxOptimIT maximum number of iterations for numerical optimization 
 #' (BFGS) after the EM algorithm. By default is set to 50. Convergence time
 #' is long. 
-#' @param errorDirec whenever the EM algorithm errors out, the function auto 
-#' saves to this directory and moves on to the next tuning parameters. Default
-#' is the R temporary directory. 
 #' @param eps threshold for convergence for the EM algorithm - default is 1e-5.
 #' @param convType manages the order of convergence within the EM algorithm. 
 #' Options are 1 (default) and 2. Type 1 forces convergence of the binomial
@@ -72,8 +69,6 @@
 #' v2 are vectors the length of the number of covariates in X.
 #' @param order default is FALSE. If TRUE, then order of estimation is ordered 
 #' by marginal correlation with response.
-#' @param alwaysUpdateWeights default is FALSE. Updates the penalty weights 
-#' after each convergence of the EM algorithm.
 #' @param penType options are 1 (default) or 2. 1 is the group log penalty. 2 
 #' is lasso.   
 #' 
@@ -111,13 +106,16 @@ penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL,
                     naPercent =.4, maxIT = 1000, 
                     maxIT2 = 25, track = NULL, theta.st = NULL, 
                     stepThrough = NULL, optimType = "EM", 
-                    loud = NULL, warmStart = TRUE, bicgamma = NULL,
+                    loud = NULL, warmStart = FALSE, bicgamma = NULL,
                     irlsConv = FALSE, weightedPen = TRUE, 
                     numericalDeriv = FALSE, pfactor = 1e-2, 
                     oneTheta = FALSE, maxOptimIT = 50, 
-                    errorDirec = tempdir(), eps = 1e-5, 
-                    convType = 1, start = NULL, order = FALSE, 
-                    alwaysUpdateWeights = FALSE, penType = 1){
+                    eps = 1e-5, convType = 1, start = NULL,
+                    order = FALSE, penType = 1){
+  
+  
+  errorDirec <- tempdir()
+  alwaysUpdateWeights <- FALSE
   
   # Create Intermediate Variables
   ##############################
@@ -756,8 +754,7 @@ penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL,
     BIC = -2.0*loglik.obs + log(N)*(sum(betas != 0) + sum(gammas != 0) - 2)
     extBIC = BIC + 2*log(M)*bicgamma*(sum(betas != 0) + sum(gammas != 0) - 2)
     extBICGG = BIC + bicgamma*2*log(choose((ncol(X)-1)*2,
-                                           (sum(betas != 0) + 
-                                            sum(gammas != 0) - 2)))
+                                           (sum(betas != 0) + sum(gammas != 0) - 2)))
     
     ############ Return values for tp pair
     if(!is.null(track)){

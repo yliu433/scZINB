@@ -22,15 +22,15 @@
 #' and 5.
 #' @param naPercent allowable percentage of observations with missing values - 
 #' default is .4.
-#' @param warmStart default is 'cond', which resets the the starting point to 
+#' @param warmStart default is 'cond', which resets the starting point to 
 #' the original starting point when non-convergence happens. Other options are 
 #' TRUE, which keeps previous estimates as starting points for estimation for 
 #' the next tuning parameter; FALSE uses the same starting point for all tp.
 #' @param bicgamma the parameter used in the extended BIC. Default is \code{NULL}, 
 #' which uses the log(the dimension)/log(the sample size). 
-#' @param errorDirec whenever the EM algorithm errors out, the function auto 
-#' saves to this directory and moves on to the next tuning parameters. Default
-#' is the R temporary directory. 
+#' @param maxOptimIT maximum number of iterations for numerical optimization 
+#' (BFGS) after the EM algorithm. By default is set to 50. Convergence time
+#' is long. 
 #' @param eps threshold for convergence for the EM algorithm - default is 1e-5.
 #' @param start default is 'jumpstart', which estimates the starting coefficients
 #' from penalized negative binomial estimation and logistic regression based on
@@ -47,8 +47,8 @@ nsZINB <- function(dat, filter = NULL, bic = "extBIC",
                    unpenalizedx = NULL, unpenalizedz = NULL, 
                    lambdas = NULL, taus = NULL, nlambda = 30, ntau = 5, 
                    naPercent = .4, warmStart = "cond", bicgamma = NULL,
-                   errorDirec = tempdir(), eps = 1e-5, 
-                   start = "jumpstart"){
+                   maxOptimIT = 0, theta.st = NULL, oneTheta = FALSE,
+                   eps = 1e-5, start = "jumpstart"){
   
   
   p <- ncol(dat)
@@ -61,12 +61,14 @@ nsZINB <- function(dat, filter = NULL, bic = "extBIC",
   res1 <- lapply(1:ncol(dat), function(i){
     y <- data[, i]
     X <- data[, which(filter[, i] != 0), drop = FALSE]
-    tmp <- penZINB(y, log(X + 1/6), maxIT = 100, maxOptimIT = 0, 
+    tmp <- penZINB(y, log(X + 1/6), maxIT = 100, 
+                   maxOptimIT = maxOptimIT, 
+                   theta.st = theta.st, oneTheta = oneTheta,
                    unpenalizedx = unpenalizedx, unpenalizedz = unpenalizedz,
                    lambdas = lambdas, taus = taus, nlambda = nlambda, ntau = ntau, 
                    naPercent = naPercent, warmStart = warmStart, 
                    bicgamma = bicgamma, start = start, 
-                   errorDirec = errorDirec, eps = eps)
+                   eps = eps)
     tmp
   })
   
