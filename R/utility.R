@@ -82,8 +82,12 @@ updateObsLik <- function(X, gammas, offsetz, betas, offsetx, y, Y0, theta, lambd
         suppressWarnings(dnbinom(0, size = theta, mu = mu, log = TRUE))))
   loglik1 <- log(1-pij) + 
           suppressWarnings(dnbinom(y, size = theta, mu = mu, log = TRUE))
-
-  loglik.obs = sum(loglik0[Y0]) + sum(loglik1[-Y0]) 
+  
+  if(length(Y0) == 0){
+    loglik.obs = sum(loglik1)
+  }else{
+    loglik.obs = sum(loglik0[Y0]) + sum(loglik1[-Y0]) 
+  }
   
   return(loglik.obs)
 }

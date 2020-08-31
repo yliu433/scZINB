@@ -116,6 +116,7 @@ penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL,
   
   errorDirec <- tempdir()
   alwaysUpdateWeights <- FALSE
+  X_tmp <- X
   
   # Create Intermediate Variables
   ##############################
@@ -332,22 +333,32 @@ penZINB <- function(y, X, unpenalizedx = NULL, unpenalizedz = NULL,
   
   theta = theta.st
   if(is.null(theta)){
-    linkobj.z = binomial()
-    linkobj.count = negative.binomial(1)
     
-    etaz = X%*%gammas + offsetz
-    pij = linkobj.z$linkinv(etaz)
+    fit <- try(zeroinfl(y ~ X_tmp, dist="negbin", link = "logit"), 
+               silent = TRUE)
     
-    eta = X%*%betas + offsetx
-    mu = linkobj.count$linkinv(eta)
+    if(inherits(fit, 'try-error')){
+      linkobj.z = binomial()
+      linkobj.count = negative.binomial(1)
+      
+      etaz = X%*%gammas + offsetz
+      pij = linkobj.z$linkinv(etaz)
+      
+      eta = X%*%betas + offsetx
+      mu = linkobj.count$linkinv(eta)
+      
+      fnb = dnbinom(y, mu = mu, size = 1)
+      
+      ############################ Calculate expected value of latent var z
+      zGy= (pij/(pij + fnb*(1-pij)))*(y==0)
+      temp = updateTheta(betas, gammas, offsetx, offsetz, lambda, tau, theta.st, 
+                         1, Y0, X, zGy, y)
+      theta = temp[1]
+    }else{
+      theta <- fit$theta
+    }
     
-    fnb = dnbinom(y, mu = mu, size = 1)
     
-    ############################ Calculate expected value of latent var z
-    zGy= (pij/(pij + fnb*(1-pij)))*(y==0)
-    temp = updateTheta(betas, gammas, offsetx, offsetz, lambda, tau, theta.st, 
-                       1, Y0, X, zGy, y)
-    theta = temp[1]
   }
   
   

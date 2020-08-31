@@ -286,13 +286,30 @@ double updateCoefk_log(Eigen::VectorXd y, Eigen::VectorXd betas,
                        const bool irlsConv, const double betaWeight, 
                        const double gammaWeight, const double countEM, const double countk){
     
+    int i;
+    double yi;
     double diff = 1000;
     int count = 0;
+    double sumg = 0;
     
     Eigen::VectorXd eta(X.rows());
     Eigen::VectorXd eta2(X.rows());
     Eigen::VectorXd mu(X.rows());
     Eigen::VectorXd mu2(X.rows());
+    Eigen::VectorXd indx(y.size());
+    
+    for (i=0; i<y.size(); i++) {
+        yi  = y(i);
+        if (yi == 0) {
+            indx(i) = 1;
+        }else if (yi != 0) {
+            indx(i) = 0;
+        }
+    }
+    
+    for(i = 0; i < y.size(); i++){
+        sumg += indx(i);
+    }
     
     switch(family){
     case 1 :
@@ -351,7 +368,14 @@ double updateCoefk_log(Eigen::VectorXd y, Eigen::VectorXd betas,
         double result; 
         
         if(k == 0){
-            result = upd;
+            
+            if (sumg == 0 && family == 2){
+                result = -100;
+            }else{
+                result = upd;
+            }
+    
+            
         } 
         else {
             switch(family){
@@ -364,15 +388,21 @@ double updateCoefk_log(Eigen::VectorXd y, Eigen::VectorXd betas,
                     std::abs(gammas(k))*gammaWeight + tau)*updDem);
                 break;
             }
-            if(upd > delta){
-                result = upd - delta;
-            }
-            else if(upd <= -1*delta){
-                result = upd + delta;
-            }
-            else {
+            
+            if (sumg == 0 && family == 2){
                 result = 0;
+            }else{
+                if(upd > delta){
+                    result = upd - delta;
+                }
+                else if(upd <= -1*delta){
+                    result = upd + delta;
+                }
+                else {
+                    result = 0;
+                }
             }
+            
         }    
         
         switch(family){
