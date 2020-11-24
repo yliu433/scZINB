@@ -38,12 +38,13 @@
 #' values to 0. Otherwise, can also take direct input for starting
 #' values. Must be in the form of list(betas = v1, gammas = v2), where v1 and
 #' v2 are vectors the length of the number of covariates in X.
+#' @param controlDat Data to control for in the model. Log transformation to be applied . If NULL then `dat` is used as default.
 #' 
 #' @return returns the estimated moral graph.
 #' @seealso \code{\link{penZINB}} for the penalized zero-inflated negative 
 #' binomial model.
 #' @export
-nsZINB <- function(dat, filter = NULL, bic = "extBIC", 
+nsZINB <- function(dat, controlDat=NULL, filter = NULL, bic = "extBIC", 
                    unpenalizedx = NULL, unpenalizedz = NULL, 
                    lambdas = NULL, taus = NULL, nlambda = 30, ntau = 5, 
                    naPercent = .4, warmStart = "cond", bicgamma = NULL,
@@ -53,14 +54,18 @@ nsZINB <- function(dat, filter = NULL, bic = "extBIC",
   
   p <- ncol(dat)
   
+  if(is.null(controlDat)){
+    controlDat=dat
+  }
+  
   if(is.null(filter)){
     filter <- matrix(1, p, p)
     diag(filter) <- 0
   }
   
   res1 <- lapply(1:ncol(dat), function(i){
-    y <- data[, i]
-    X <- data[, which(filter[, i] != 0), drop = FALSE]
+    y <- dat[, i]
+    X <- controlDat[, which(filter[, i] != 0), drop = FALSE]
     tmp <- penZINB(y, log(X + 1/6), maxIT = 100, 
                    maxOptimIT = maxOptimIT, 
                    theta.st = theta.st, oneTheta = oneTheta,
